@@ -5,9 +5,11 @@ import mascot from "@/assets/mascot.png";
 import { Button } from "@/components/ui/button";
 import { AuroraBG } from "@/components/AuroraBG";
 import { useCanonical } from "@/lib/seo";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const canonical = useCanonical();
+  const { user } = useAuth();
 
   return (
     <main className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
@@ -32,12 +34,25 @@ const Index = () => {
             playful touch games, soothing visuals, and guided breathing.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Link to="/onboarding">
-              <Button variant="hero" size="xl">Start Setup</Button>
-            </Link>
-            <Link to="/dashboard">
-              <Button variant="secondary" size="lg">Explore</Button>
-            </Link>
+            {user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button variant="hero" size="xl">Go to Dashboard</Button>
+                </Link>
+                <Link to="/onboarding">
+                  <Button variant="secondary" size="lg">Update Setup</Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="hero" size="xl">Get Started</Button>
+                </Link>
+                <Link to="/auth">
+                  <Button variant="secondary" size="lg">Sign In</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
 

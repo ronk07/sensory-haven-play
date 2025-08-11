@@ -4,7 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -27,25 +30,81 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <AppHeader />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/music" element={<MusicCorner />} />
-            <Route path="/touch" element={<TouchGames />} />
-            <Route path="/visual" element={<VisualCalm />} />
-            <Route path="/sound" element={<Soundscapes />} />
-            <Route path="/breathing" element={<Breathing />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/parental" element={<Parental />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <EmergencyCalm />
-        </BrowserRouter>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Protected routes */}
+              <Route path="/onboarding" element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <Onboarding />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/music" element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <MusicCorner />
+                </ProtectedRoute>
+              } />
+              <Route path="/touch" element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <TouchGames />
+                </ProtectedRoute>
+              } />
+              <Route path="/visual" element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <VisualCalm />
+                </ProtectedRoute>
+              } />
+              <Route path="/sound" element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <Soundscapes />
+                </ProtectedRoute>
+              } />
+              <Route path="/breathing" element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <Breathing />
+                </ProtectedRoute>
+              } />
+              <Route path="/favorites" element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <Favorites />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <Settings />
+                </ProtectedRoute>
+              } />
+              <Route path="/parental" element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <Parental />
+                </ProtectedRoute>
+              } />
+              
+              {/* Catch all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <EmergencyCalm />
+          </BrowserRouter>
+        </AuthProvider>
       </TooltipProvider>
     </HelmetProvider>
   </QueryClientProvider>

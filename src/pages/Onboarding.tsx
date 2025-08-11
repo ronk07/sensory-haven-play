@@ -4,6 +4,9 @@ import { useCanonical } from "@/lib/seo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 const steps = ["About You", "Preferences", "Safety"] as const;
 
@@ -12,11 +15,15 @@ type AgeGroup = "6–8" | "9–12" | "13–15";
 const Onboarding = () => {
   const canonical = useCanonical();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "">("");
   const [pref, setPref] = useState<string[]>([]);
   const [triggers, setTriggers] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
 
   const toggle = (value: string, setter: (v: string[]) => void, list: string[]) => {
     setter(list.includes(value) ? list.filter(x => x !== value) : [...list, value]);
@@ -24,7 +31,48 @@ const Onboarding = () => {
 
   const next = () => setStep((s) => Math.min(s + 1, steps.length - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
-  const finish = () => navigate("/dashboard");
+  
+  const finish = async () => {
+    if (!user) return;
+    
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          display_name: name || null,
+          age_group: ageGroup || null,
+          preferences: pref,
+          triggers: triggers,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (error) {
+        console.error('Error saving profile:', error);
+        toast({
+          title: "Error saving profile",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Profile saved!",
+          description: "Welcome to your personalized Sensory Haven.",
+        });
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Something went wrong",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -122,7 +170,9 @@ const Onboarding = () => {
             {step < steps.length - 1 ? (
               <Button onClick={next}>Next</Button>
             ) : (
-              <Button onClick={finish}>Finish</Button>
+              <Button onClick={finish} disabled={saving}>
+                {saving ? 'Saving...' : 'Finish'}
+              </Button>
             )}
           </div>
         </CardContent>
